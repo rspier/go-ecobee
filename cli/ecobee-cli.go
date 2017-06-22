@@ -36,6 +36,7 @@ var (
 	heatFlag       = flag.Float64("heat", 0, "heat temp")
 	message        = flag.String("message", "", "message to send")
 	thermostatFlag = flag.String("thermostat", "", "thermostat id")
+	resumeAll      = flag.Bool("resumeall", false, "resume to next event (false) or to program (true)")
 )
 
 const (
@@ -146,6 +147,13 @@ func main() {
 		}
 		fmt.Printf("Successfully held temperature\n")
 
+	case "resume":
+		err := client.ResumeProgram(thermostat, *resumeAll)
+		if err != nil {
+			log.Fatalf("ResumeProgram error: %v", err)
+		}
+		fmt.Printf("Successfully resumed program\n")
+
 	case "status":
 		showStatus(client)
 
@@ -157,7 +165,7 @@ func main() {
 		fmt.Printf("Successfully sent message: %q\n", *message)
 
 	default:
-		log.Fatalf("invalid command: %q.\nCommands are: list, fan, hold, status, message", *command)
+		log.Fatalf("invalid command: %q.\nCommands are: list, fan, hold, resume, status, message", *command)
 	}
 
 }

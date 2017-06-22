@@ -50,6 +50,8 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 		return fmt.Errorf("error unmarshalling json: %v", err)
 	}
 
+	glog.V(1).Infof("UpdateThermostat response: %+v", s)
+
 	if s.Status.Code == 0 {
 		return nil
 	}

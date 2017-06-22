@@ -103,13 +103,16 @@ type Function struct {
 }
 
 type UpdateThermostatRequest struct {
-	Selection Selection `json:"selection"`
-	//Thermostat Thermostat `json:"thermostat"`
+	Selection Selection  `json:"selection"`
 	Functions []Function `json:"functions"`
 }
 
 type UpdateThermostatResponse struct {
 	Status Status `json:"status"`
+}
+
+type ResumeProgramParams struct {
+	ResumeAll bool `json:"resumeAll"`
 }
 
 type Status struct {

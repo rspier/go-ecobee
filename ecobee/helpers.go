@@ -22,6 +22,24 @@ import (
 	"time"
 )
 
+func (c *Client) ResumeProgram(id string, resumeAll bool) error {
+	r := &UpdateThermostatRequest{
+		Selection: Selection{
+			SelectionType:  "thermostats",
+			SelectionMatch: id,
+		},
+		Functions: []Function{
+			Function{
+				Type: "resumeProgram",
+				Params: ResumeProgramParams{
+					ResumeAll: resumeAll,
+				},
+			},
+		},
+	}
+	return c.UpdateThermostat(*r)
+}
+
 func (c *Client) RunFan(id string, duration time.Duration) error {
 	end := time.Now().Add(duration)
 	shp := SetHoldParams{
