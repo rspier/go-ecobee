@@ -41,15 +41,15 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	}
 	resp.Body.Close()
 
-	var s Status
+	var s UpdateThermostatResponse
 	if err = json.Unmarshal(body, &s); err != nil {
 		return fmt.Errorf("error unmarshalling json: %v", err)
 	}
 
-	if s.Code == 0 {
+	if s.Status.Code == 0 {
 		return nil
 	}
-	return fmt.Errorf("API error: %s", s.Message)
+	return fmt.Errorf("API error: %s", s.Status.Message)
 }
 
 func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {

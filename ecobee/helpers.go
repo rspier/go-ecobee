@@ -65,7 +65,7 @@ func (c *Client) SendMessage(thermostat, message string) error {
 
 	r := &UpdateThermostatRequest{
 		Selection: Selection{
-			SelectionType:  "thermostat",
+			SelectionType:  "thermostats",
 			SelectionMatch: thermostat,
 		},
 		Functions: []Function{
@@ -138,7 +138,7 @@ func (c *Client) HoldTemp(thermostat string, heat, cool float64, d time.Duration
 
 	r := &UpdateThermostatRequest{
 		Selection: Selection{
-			SelectionType:  "thermostat",
+			SelectionType:  "thermostats",
 			SelectionMatch: thermostat,
 		},
 		Functions: []Function{

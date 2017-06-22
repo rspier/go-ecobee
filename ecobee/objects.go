@@ -108,9 +108,13 @@ type UpdateThermostatRequest struct {
 	Functions []Function `json:"functions"`
 }
 
+type UpdateThermostatResponse struct {
+	Status Status `json:"status"`
+}
+
 type Status struct {
 	Code    int    `json:"code"`
-	Message string `json:"messaage"`
+	Message string `json:"message"`
 }
 
 type Thermostat struct {
