@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/golang/glog"
 )
 
 const thermostatAPIURL = `https://api.ecobee.com/1/thermostat`
@@ -28,6 +30,8 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling json: %v", err)
 	}
+
+	glog.V(1).Infof("UpdateThermostat request: %s", j)
 
 	// everything below here can be factored out into a common POST func
 	resp, err := c.Post(thermostatAPIURL, "application/json", bytes.NewReader(j))
@@ -53,7 +57,6 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 }
 
 func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
-	// TODO: Refactor this to use GetThermostats.
 	// TODO: Consider factoring the generation of Selection out into
 	// something else to make it more convenient to toggle the IncludeX
 	// flags?
@@ -102,6 +105,8 @@ func (c *Client) GetThermostats(selection Selection) ([]Thermostat, error) {
 	if err = json.Unmarshal(body, &r); err != nil {
 		return nil, fmt.Errorf("error unmarshalling json: %v", err)
 	}
+
+	glog.V(1).Infof("GetThermostats response: %s", r)
 
 	if r.Status.Code != 0 {
 		return nil, fmt.Errorf("api error %d: %v", r.Status.Code, r.Status.Message)
