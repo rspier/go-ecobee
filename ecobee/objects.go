@@ -133,7 +133,8 @@ type Thermostat struct {
 	UtcTime        string `json:"utcTime"`
 	//Alerts         []Alert  `json:"alerts"`
 	//Settings       Settings `json:"settings"`
-	Runtime Runtime `json:"runtime"`
+	Runtime         Runtime         `json:"runtime"`
+	ExtendedRuntime ExtendedRuntime `json:"extendedRuntime"`
 	/// ...
 	Events  []Event `json:"events"`
 	Program Program `json:"program"`
@@ -160,6 +161,34 @@ type Runtime struct {
 	DesiredFanMode     string `json:"desiredFanMode"`
 	DesiredHeatRange   []int  `json:"desiredHeatRange"`
 	DesiredCoolRange   []int  `json:"desiredCoolRange"`
+}
+
+type ExtendedRuntime struct {
+	LastReadingTimestamp     string   `json:"lastReadingTimestamp"`
+	RuntimeDate              string   `json:"runtimeDate"`
+	RuntimeInterval          int      `json:"runtimeInterval"`
+	ActualTemperature        []int    `json:"actualTemperature"`
+	ActualHumidity           []int    `json:"actualHumidity"`
+	DesiredHeat              []int    `json:"desiredHeat"`
+	DesiredCool              []int    `json:"desiredCool"`
+	DesiredHumidity          []int    `json:"desiredHumidity"`
+	DesiredDehumidity        []int    `json:"desiredDehumidity"`
+	DmOffset                 []int    `json:"dmOffset"`
+	HvacMode                 []string `json:"hvacMode"`
+	HeatPump1                []int    `json:"heatPump1"`
+	HeatPump2                []int    `json:"heatPump2"`
+	AuxHeat1                 []int    `json:"auxHeat1"`
+	AuxHeat2                 []int    `json:"auxHeat2"`
+	AuxHeat3                 []int    `json:"auxHeat3"`
+	Cool1                    []int    `json:"cool1"`
+	Cool2                    []int    `json:"cool2"`
+	Fan                      []int    `json:"fan"`
+	Humidifier               []int    `json:"humidifier"`
+	Dehumidifier             []int    `json:"dehumidifier"`
+	Economizer               []int    `json:"economizer"`
+	Ventilator               []int    `json:"ventilator"`
+	CurrentElectricityBill   int      `json:"currentElectricityBill"`
+	ProjectedElectricityBill int      `json:"projectedElectricityBill"`
 }
 
 type GetThermostatsRequest struct {

@@ -66,12 +66,13 @@ func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
 		SelectionType:  "thermostats",
 		SelectionMatch: thermostatID,
 
-		IncludeAlerts:   false,
-		IncludeEvents:   true,
-		IncludeProgram:  true,
-		IncludeRuntime:  true,
-		IncludeSettings: false,
-		IncludeSensors:  true,
+		IncludeAlerts:          false,
+		IncludeEvents:          true,
+		IncludeProgram:         false,
+		IncludeRuntime:         true,
+		IncludeExtendedRuntime: false,
+		IncludeSettings:        false,
+		IncludeSensors:         true,
 	}
 	thermostats, err := c.GetThermostats(s)
 	if err != nil {
@@ -108,7 +109,7 @@ func (c *Client) GetThermostats(selection Selection) ([]Thermostat, error) {
 		return nil, fmt.Errorf("error unmarshalling json: %v", err)
 	}
 
-	glog.V(1).Infof("GetThermostats response: %s", r)
+	glog.V(1).Infof("GetThermostats response: %#v", r)
 
 	if r.Status.Code != 0 {
 		return nil, fmt.Errorf("api error %d: %v", r.Status.Code, r.Status.Message)
