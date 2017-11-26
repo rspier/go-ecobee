@@ -63,7 +63,22 @@ type SetHoldParams struct {
 }
 
 type Alert struct {
-	AlertType string `json:"alertType"`
+	//	AcknowledgeRef       string `json:"acknowledgeRef"`
+	//	Date                 string `json:"date"`
+	//	Time                 string `json:"time"`
+	//	Severity             string `json:"severity"`
+	Text string `json:"text"`
+	//	AlertNumber          int    `json:"alertNumber"`
+	AlertType       string `json:"alertType"`
+	IsOperatorAlert bool   `json:"isOperatorAlert"`
+	// Reminder             string `json:"reminder"`
+	// ShowIdt              bool   `json:"showIdt"`
+	// ShowWeb              bool   `json:"showWeb"`
+	// SendEmail            bool   `json:"sendEmail"`
+	// Acknowledgement      string `json:"acknowledgement"`
+	// RemindMeLater        bool   `json:"remindMeLater"`
+	// ThermostatIdentifier string `json:"thermostatIdentifier"`
+	// NotificationType     string `json:"notificationType"`
 }
 
 type SendMessageParams struct {
@@ -140,6 +155,7 @@ type Thermostat struct {
 	Program Program `json:"program"`
 	/// ...
 	RemoteSensors []RemoteSensor `json:"remoteSensors"`
+	Weather       Weather        `json:"weather"`
 }
 
 type Runtime struct {
@@ -245,4 +261,57 @@ type Program struct {
 	Schedule          [][]string `json:"schedule"`
 	Climates          []Climate  `json:"climates"`
 	CurrentClimateRef string     `json:"currentClimateRef"`
+}
+
+type GetThermostatSummaryRequest struct {
+	Selection Selection `json:"selection"`
+}
+
+type GetThermostatSummaryResponse struct {
+	RevisionList    []string `json:"revisionList"`
+	ThermostatCount int      `json:"thermostatCount"`
+	StatusList      []string `json:"statusList"`
+	Status          Status   `json:"status"`
+}
+
+// Not part of the API
+type EquipmentStatus struct {
+	HeatPump, HeatPump2, HeatPump3, CompCool1, CompCool2, AuxHeat1, AuxHeat2, AuxHeat3, Fan, Humidifier, Dehumidifier, Ventilator, Economizer, CompHotWater, AuxHotWater bool
+}
+
+type ThermostatSummary struct {
+	Identifier         string `json:"Identifier"`
+	Name               string `json:"Name"`
+	Connected          bool   `json:"Connected"`
+	ThermostatRevision int    `json:"ThermostatRevision"`
+	AlertsRevision     int    `json:"AlertsRevision."`
+	RuntimeRevision    int    `json:"RuntimeRevision"`
+	IntervalRevision   int    `json:"IntervalRevision"`
+	EquipmentStatus
+}
+type ThermostatSummaryMap map[string]ThermostatSummary
+
+type Weather struct {
+	Timestamp      string            `json:"timestamp"`
+	WeatherStation string            `json:"weatherStation"`
+	Forecasts      []WeatherForecast `json:"forecasts"`
+}
+
+type WeatherForecast struct {
+	WeatherSymbol    int    `json:"weatherSymbol"`
+	DateTime         string `json:"dateTime"`
+	Condition        string `json:"condition"`
+	Temperature      int    `json:"temperature"`
+	Pressure         int    `json:"pressure"`
+	RelativeHumidity int    `json:"relativeHumidity"`
+	Dewpoint         int    `json:"dewpoint"`
+	Visibility       int    `json:"visibility"`
+	WindSpeed        int    `json:"windSpeed"`
+	WindGust         int    `json:"windGust"`
+	WindDirection    string `json:"windDirection"`
+	WindBearing      int    `json:"windBearing"`
+	Pop              int    `json:"pop"`
+	TempHigh         int    `json:"tempHigh"`
+	TempLow          int    `json:"tempLow"`
+	Sky              int    `json:"sky"`
 }

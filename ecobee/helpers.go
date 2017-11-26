@@ -76,7 +76,8 @@ func (c *Client) RunFan(id string, duration time.Duration) error {
 func (c *Client) SendMessage(thermostat, message string) error {
 	smp := SendMessageParams{
 		Alert: Alert{
-			AlertType: "message",
+			AlertType:       "message",
+			IsOperatorAlert: true,
 		},
 		Text: message,
 	}

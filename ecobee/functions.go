@@ -19,11 +19,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
+	"strings"
 
 	"github.com/golang/glog"
 )
 
 const thermostatAPIURL = `https://api.ecobee.com/1/thermostat`
+const thermostatSummaryURL = `https://api.ecobee.com/1/thermostatSummary`
 
 func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	j, err := json.Marshal(&utr)
@@ -73,6 +76,7 @@ func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
 		IncludeExtendedRuntime: false,
 		IncludeSettings:        false,
 		IncludeSensors:         true,
+		IncludeWeather:         false,
 	}
 	thermostats, err := c.GetThermostats(s)
 	if err != nil {
@@ -92,17 +96,7 @@ func (c *Client) GetThermostats(selection Selection) ([]Thermostat, error) {
 		return nil, fmt.Errorf("error marshaling json: %v", err)
 	}
 
-	// everything below here can be factored out into a common GET func
-	resp, err := c.Get(fmt.Sprintf("%s?json=%s", thermostatAPIURL, j))
-	if err != nil {
-		return nil, fmt.Errorf("error on post request: %v", err)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading body: %v", err)
-	}
-	resp.Body.Close()
+	body, err := c.get(thermostatAPIURL, j)
 
 	var r GetThermostatsResponse
 	if err = json.Unmarshal(body, &r); err != nil {
@@ -115,4 +109,152 @@ func (c *Client) GetThermostats(selection Selection) ([]Thermostat, error) {
 		return nil, fmt.Errorf("api error %d: %v", r.Status.Code, r.Status.Message)
 	}
 	return r.ThermostatList, nil
+}
+
+func (c *Client) GetThermostatSummary(selection Selection) (map[string]ThermostatSummary, error) {
+	req := GetThermostatSummaryRequest{
+		Selection: selection,
+	}
+	j, err := json.Marshal(&req)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling json: %v", err)
+	}
+
+	body, err := c.get(thermostatSummaryURL, j)
+
+	var r GetThermostatSummaryResponse
+	if err = json.Unmarshal(body, &r); err != nil {
+		return nil, fmt.Errorf("error unmarshalling json: %v", err)
+	}
+
+	glog.V(1).Infof("GetThermostatSummary response: %#v", r)
+
+	var tsm = make(ThermostatSummaryMap, r.ThermostatCount)
+
+	for i := 0; i < r.ThermostatCount; i++ {
+		rl := strings.Split(r.RevisionList[i], ":")
+		if len(rl) < 7 {
+			return nil, fmt.Errorf("invalid RevisionList, not enough fields: %s", r.RevisionList[i])
+		}
+
+		// Assume order of RevisionList and StatusList is the same.
+		es, err := buildEquipmentStatus(r.StatusList[i])
+
+		connected, err := strconv.ParseBool(rl[2])
+		if err != nil {
+			// TODO
+		}
+		thermostatRevision, err := strconv.Atoi(rl[3])
+		if err != nil {
+			// TODO
+		}
+		alertsRevision, err := strconv.Atoi(rl[4])
+		if err != nil {
+			// TODO
+		}
+		runtimeRevision, err := strconv.Atoi(rl[5])
+		if err != nil {
+			// TODO
+		}
+		intervalRevision, err := strconv.Atoi(rl[6])
+		if err != nil {
+			// TODO
+		}
+
+		ts := ThermostatSummary{
+			Identifier:         rl[0],
+			Name:               rl[1],
+			Connected:          connected,
+			ThermostatRevision: thermostatRevision,
+			AlertsRevision:     alertsRevision,
+			RuntimeRevision:    runtimeRevision,
+			IntervalRevision:   intervalRevision,
+			EquipmentStatus:    es,
+		}
+		tsm[rl[0]] = ts
+	}
+	return tsm, nil
+}
+
+func (c *Client) get(endpoint string, request []byte) ([]byte, error) {
+
+	glog.V(2).Infof("get(%s?json=%s)", endpoint, request)
+
+	resp, err := c.Get(fmt.Sprintf("%s?json=%s", endpoint, request))
+	if err != nil {
+		return nil, fmt.Errorf("error on post request: %v", err)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading body: %v", err)
+	}
+
+	glog.V(2).Infof("respones: %s", body)
+
+	resp.Body.Close()
+	return body, nil
+}
+
+func buildEquipmentStatus(input string) (EquipmentStatus, error) {
+	var es EquipmentStatus
+
+	split := strings.SplitN(input, ":", 2)
+
+	// Nothing on the right hand side.
+	if len(split[1]) == 0 {
+		return es, nil
+	}
+
+	statuses := strings.Split(split[1], ",")
+
+	/* consider if this should be a switch statement instead of mucking with reflect */
+	//v := reflect.ValueOf(&es).Elem()
+	for _, s := range statuses {
+		// f := v.FieldByName(strings.Title(s))
+		// if f == reflect.Zero(v.Type()) {
+		// 	glog.Infof("Unknown status %s from thermostat %s", s, id)
+		// 	continue
+		// }
+		// f.SetBool(true)
+		es.Set(s, true)
+	}
+	return es, nil
+}
+
+func (es *EquipmentStatus) Set(field string, state bool) {
+
+	switch field {
+	case "heatPump":
+		es.HeatPump = state
+	case "heatPump2":
+		es.HeatPump2 = state
+	case "heatPump3":
+		es.HeatPump3 = state
+	case "compCool1":
+		es.CompCool1 = state
+	case "compCool2":
+		es.CompCool2 = state
+	case "auxHeat1":
+		es.AuxHeat1 = state
+	case "auxHeat2":
+		es.AuxHeat2 = state
+	case "auxHeat3":
+		es.AuxHeat3 = state
+	case "fan":
+		es.Fan = state
+	case "humidifier":
+		es.Humidifier = state
+	case "dehumidifier":
+		es.Dehumidifier = state
+	case "ventilator":
+		es.Ventilator = state
+	case "economizer":
+		es.Economizer = state
+	case "compHotWater":
+		es.CompHotWater = state
+	case "auxHotWater":
+		es.AuxHotWater = state
+	}
+
 }
