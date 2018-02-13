@@ -210,7 +210,7 @@ type ExtendedRuntime struct {
 
 type GetThermostatsRequest struct {
 	Selection Selection `json:"selection"`
-	Page      Page      `json:"page"`
+	Page      Page      `json:"page,omitempty"`
 }
 
 type GetThermostatsResponse struct {
@@ -220,7 +220,7 @@ type GetThermostatsResponse struct {
 }
 
 type Page struct {
-	Page       int `json:"page"`
+	Page       int `json:"page,omitempty"`
 	TotalPages int `json:"totalPages"`
 	PageSize   int `json:"pageSize"`
 	Total      int `json:"total"`
