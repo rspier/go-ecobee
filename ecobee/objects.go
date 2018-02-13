@@ -110,6 +110,7 @@ type Selection struct {
 	IncludeVersion              bool   `json:"includeVersion"`
 	IncludeSecuritySettings     bool   `json:"includeSecuritySettings"`
 	IncludeSensors              bool   `json:"includeSensors"`
+	IncludeAudio                bool   `json:"includeAudio"`
 }
 
 type Function struct {
