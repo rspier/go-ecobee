@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -176,13 +177,13 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 	return tsm, nil
 }
 
-func (c *Client) get(endpoint string, request []byte) ([]byte, error) {
+func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
 
-	glog.V(2).Infof("get(%s?json=%s)", endpoint, request)
-
+	glog.V(2).Infof("get(%s?json=%s)", endpoint, rawRequest)
+	request := url.QueryEscape(string(rawRequest))
 	resp, err := c.Get(fmt.Sprintf("%s?json=%s", endpoint, request))
 	if err != nil {
-		return nil, fmt.Errorf("error on post request: %v", err)
+		return nil, fmt.Errorf("error on get request: %v", err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
