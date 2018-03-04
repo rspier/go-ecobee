@@ -15,6 +15,9 @@ package cmd
 
 import (
 	"fmt"
+	"math"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/golang/glog"
@@ -25,6 +28,7 @@ import (
 var (
 	heat, cool float64
 	duration   time.Duration
+	relativeRe = regexp.MustCompile(`^[+-]\d+$`)
 )
 
 // holdCmd represents the hold command
@@ -35,6 +39,29 @@ var holdCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		checkRequiredFlags()
 		c := client()
+
+		if heat == 0 && cool == 0 && len(args) > 0 {
+			if !relativeRe.MatchString(args[0]) {
+				glog.Exitf("Invalid relative temperature: %q", args[0])
+			}
+
+			rel, err := strconv.ParseFloat(args[0], 64)
+			if err != nil {
+				glog.Exitf("Invalid relative temperature: %q", args[0])
+			}
+
+			if math.Abs(rel) > 2 {
+				glog.Exitf("Maximum relative temperature 2, got %.f", rel)
+			}
+
+			t, err := c.GetThermostat(thermostat)
+			if err != nil {
+				glog.Exitf("error retrieving thermostat %s: %v", thermostat, err)
+			}
+
+			heat = rel + float64(t.Runtime.DesiredHeat/10.0)
+			cool = rel + float64(t.Runtime.DesiredCool/10.0)
+		}
 
 		setHold(c, heat, cool, duration)
 	},
