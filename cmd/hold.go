@@ -90,5 +90,5 @@ func setHold(c *ecobee.Client, heat, cool float64, duration time.Duration) {
 	if err != nil {
 		glog.Exitf("HoldTemp error: %v", err)
 	}
-	fmt.Printf("Successfully held temperature between %.1f and %0.1f\n", cool, heat)
+	fmt.Printf("Successfully held temperature between %0.1f and %0.1f for %v\n", heat, cool, duration)
 }
