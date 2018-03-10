@@ -33,9 +33,10 @@ var (
 
 // holdCmd represents the hold command
 var holdCmd = &cobra.Command{
-	Use:   "hold",
+	Use:   "hold [optional relative temp]",
 	Short: "Program a hold",
 	Long:  `Set a hold status on the thermostat to keep the temperature between the specified heat and cool points.`,
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		checkRequiredFlags()
 		c := client()
@@ -51,7 +52,7 @@ var holdCmd = &cobra.Command{
 			}
 
 			if math.Abs(rel) > 2 {
-				glog.Exitf("Maximum relative temperature 2, got %.f", rel)
+				glog.Exitf("Maximum relative temperature 2, got %.0f", rel)
 			}
 
 			t, err := c.GetThermostat(thermostat)
