@@ -83,6 +83,14 @@ $ go-ecobee list
 ${THERMID}: My ecobee3
 ```
 
+## Development
+
+## Staticcheck
+
+https://github.com/dominikh/go-tools
+
+staticcheck ./ecobee/ ./cmd/ .
+
 ## Ideas for future development
 
 ### Sensor Failure Test

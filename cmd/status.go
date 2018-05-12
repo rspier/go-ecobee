@@ -46,6 +46,9 @@ func showStatus(c *ecobee.Client) {
 			SelectionMatch:         thermostat,
 			IncludeEquipmentStatus: true,
 		})
+	if err != nil {
+		glog.Exitf("error retrieving thermostat summary for %s: %v", thermostat, err)
+	}
 
 	var ts ecobee.ThermostatSummary
 	var ok bool

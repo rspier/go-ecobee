@@ -98,6 +98,9 @@ func (c *Client) GetThermostats(selection Selection) ([]Thermostat, error) {
 	}
 
 	body, err := c.get(thermostatAPIURL, j)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching thermostats: %v", err)
+	}
 
 	var r GetThermostatsResponse
 	if err = json.Unmarshal(body, &r); err != nil {
@@ -122,6 +125,9 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 	}
 
 	body, err := c.get(thermostatSummaryURL, j)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching thermostat summary: %v", err)
+	}
 
 	var r GetThermostatSummaryResponse
 	if err = json.Unmarshal(body, &r); err != nil {
@@ -140,26 +146,29 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 
 		// Assume order of RevisionList and StatusList is the same.
 		es, err := buildEquipmentStatus(r.StatusList[i])
+		if err != nil {
+			return nil, fmt.Errorf("error in buildEquipmentSTatus(%v): %v", r.StatusList[i], err)
+		}
 
 		connected, err := strconv.ParseBool(rl[2])
 		if err != nil {
-			// TODO
+			return nil, fmt.Errorf("error from ParseBool(%v): %v", rl[2], err)
 		}
 		thermostatRevision, err := strconv.Atoi(rl[3])
 		if err != nil {
-			// TODO
+			return nil, fmt.Errorf("error Atoi(%v): %v", rl[3], err)
 		}
 		alertsRevision, err := strconv.Atoi(rl[4])
 		if err != nil {
-			// TODO
+			return nil, fmt.Errorf("error Atoi(%v): %v", rl[4], err)
 		}
 		runtimeRevision, err := strconv.Atoi(rl[5])
 		if err != nil {
-			// TODO
+			return nil, fmt.Errorf("error Atoi(%v): %v", rl[5], err)
 		}
 		intervalRevision, err := strconv.Atoi(rl[6])
 		if err != nil {
-			// TODO
+			return nil, fmt.Errorf("error Atoi(%v): %v", rl[6], err)
 		}
 
 		ts := ThermostatSummary{

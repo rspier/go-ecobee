@@ -15,6 +15,7 @@ package ecobee
 // limitations under the License.
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -196,6 +197,6 @@ type Client struct {
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
 func NewClient(clientID, authCache string) *Client {
 	return &Client{oauth2.NewClient(
-		oauth2.NoContext,
+		context.Background(),
 		TokenSource(clientID, authCache))}
 }
