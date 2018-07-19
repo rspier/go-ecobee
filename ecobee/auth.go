@@ -162,6 +162,9 @@ func (ts *tokenSource) getToken(uv url.Values) error {
 	}
 
 	ts.token = r.Token()
+	if !ts.token.Valid() {
+		return fmt.Errorf("invalid token")
+	}
 	err = ts.save()
 	if err != nil {
 		return fmt.Errorf("error saving token: %s", err)
