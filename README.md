@@ -18,6 +18,9 @@ go install -u github.com/rspier/go-ecobee`
 
 ```
 go build main.go
+
+# fully static binary
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
 ```
 
 ### Application ID

@@ -23,6 +23,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// output format
+var format string
+
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
@@ -31,43 +34,50 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		checkRequiredFlags()
 		c := client()
-		showStatus(c)
+
+		tsm, err := c.GetThermostatSummary(
+			ecobee.Selection{
+				SelectionType:          "thermostats",
+				SelectionMatch:         thermostat,
+				IncludeEquipmentStatus: true,
+			})
+		if err != nil {
+			glog.Exitf("error retrieving thermostat summary for %s: %v", thermostat, err)
+		}
+
+		var ts ecobee.ThermostatSummary
+		var ok bool
+
+		if ts, ok = tsm[thermostat]; !ok {
+			glog.Exitf("thermostat %s missing from ThermostatSummary", thermostat)
+		}
+
+		t, err := c.GetThermostat(thermostat)
+		if err != nil {
+			glog.Exitf("error retrieving thermostat %s: %v", thermostat, err)
+		}
+
+		switch format {
+		case "machine":
+			machineStatus(c, &ts, t)
+		default:
+			showStatus(c, &ts, t)
+		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(statusCmd)
+	statusCmd.Flags().StringVarP(&format, "format", "f", "", "output format")
 }
 
-func showStatus(c *ecobee.Client) {
-	tsm, err := c.GetThermostatSummary(
-		ecobee.Selection{
-			SelectionType:          "thermostats",
-			SelectionMatch:         thermostat,
-			IncludeEquipmentStatus: true,
-		})
-	if err != nil {
-		glog.Exitf("error retrieving thermostat summary for %s: %v", thermostat, err)
-	}
-
-	var ts ecobee.ThermostatSummary
-	var ok bool
-
-	if ts, ok = tsm[thermostat]; !ok {
-		glog.Exitf("thermostat %s missing from ThermostatSummary", thermostat)
-	}
-
-	t, err := c.GetThermostat(thermostat)
-	if err != nil {
-		glog.Exitf("error retrieving thermostat %s: %v", thermostat, err)
-	}
-
+func showStatus(c *ecobee.Client, ts *ecobee.ThermostatSummary, t *ecobee.Thermostat) {
 	running := formatEquipmentStatus(ts)
 
 	fmt.Printf("Current Settings (%s): %.1f - %.1f.  Fan: %s%s\n",
 		strings.Title(t.Program.CurrentClimateRef),
-		float64(t.Runtime.DesiredHeat/10.0),
-		float64(t.Runtime.DesiredCool/10.0),
+		float64(t.Runtime.DesiredHeat)/10.0,
+		float64(t.Runtime.DesiredCool)/10.0,
 		t.Runtime.DesiredFanMode,
 		running)
 
@@ -76,8 +86,8 @@ func showStatus(c *ecobee.Client) {
 		switch ev.Type {
 		case "hold":
 			fmt.Printf("Holding at %.1f - %.1f (Fan: %s) until %s %s\n",
-				float64(ev.HeatHoldTemp/10.0),
-				float64(ev.CoolHoldTemp/10.0),
+				float64(ev.HeatHoldTemp)/10.0,
+				float64(ev.CoolHoldTemp)/10.0,
 				ev.Fan,
 				ev.EndDate,
 				ev.EndTime)
@@ -87,7 +97,7 @@ func showStatus(c *ecobee.Client) {
 		}
 	}
 
-	fmt.Printf("Temperature: %.1f\n", float64(t.Runtime.ActualTemperature/10.0))
+	fmt.Printf("Temperature: %.1f\n", float64(t.Runtime.ActualTemperature)/10.0)
 
 	for _, s := range t.RemoteSensors {
 		var temp, occ string
@@ -113,7 +123,7 @@ func showStatus(c *ecobee.Client) {
 
 }
 
-func formatEquipmentStatus(ts ecobee.ThermostatSummary) string {
+func formatEquipmentStatus(ts *ecobee.ThermostatSummary) string {
 	eqs := ""
 	if ts.EquipmentStatus.Fan {
 		eqs = " (running)"
@@ -134,4 +144,51 @@ func formatEquipmentStatus(ts ecobee.ThermostatSummary) string {
 		eqs += " Heat3"
 	}
 	return eqs
+}
+
+func writeMetric(name string, val float64) {
+	fmt.Printf("%s %f\n", name, val)
+}
+
+func stringBoolToFloat(b string) float64 {
+	if b == "true" {
+		return 1
+	}
+	return 0
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+func machineStatus(c *ecobee.Client, ts *ecobee.ThermostatSummary, t *ecobee.Thermostat) {
+
+	writeMetric("desired_heat", float64(t.Runtime.DesiredHeat)/10.0)
+	writeMetric("desired_cool", float64(t.Runtime.DesiredCool)/10.0)
+	writeMetric("temperature", float64(t.Runtime.ActualTemperature)/10.0)
+
+	for _, s := range t.RemoteSensors {
+		for _, c := range s.Capability {
+			if c.Type == "temperature" {
+				t, err := strconv.ParseFloat(c.Value, 64)
+				if err == nil {
+					writeMetric(fmt.Sprintf("sensor_temperature{name=%q}", s.Name), t/10.0)
+				}
+			}
+			if c.Type == "occupancy" {
+				writeMetric(fmt.Sprintf("sensor_occupied{name=%q}", s.Name), stringBoolToFloat(c.Value))
+			}
+		}
+	}
+
+	writeMetric("fan", boolToFloat(ts.EquipmentStatus.Fan))
+	writeMetric("comp_cool1", boolToFloat(ts.EquipmentStatus.CompCool1))
+	writeMetric("comp_cool2", boolToFloat(ts.EquipmentStatus.CompCool2))
+
+	writeMetric("aux_heat1", boolToFloat(ts.EquipmentStatus.AuxHeat1))
+	writeMetric("aux_heat2", boolToFloat(ts.EquipmentStatus.AuxHeat2))
+	writeMetric("aux_heat3", boolToFloat(ts.EquipmentStatus.AuxHeat3))
 }
