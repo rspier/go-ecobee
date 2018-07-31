@@ -150,20 +150,6 @@ func writeMetric(name string, val float64) {
 	fmt.Printf("%s %f\n", name, val)
 }
 
-func stringBoolToFloat(b string) float64 {
-	if b == "true" {
-		return 1
-	}
-	return 0
-}
-
-func boolToFloat(b bool) float64 {
-	if b {
-		return 1
-	}
-	return 0
-}
-
 func machineStatus(c *ecobee.Client, ts *ecobee.ThermostatSummary, t *ecobee.Thermostat) {
 
 	writeMetric("desired_heat", float64(t.Runtime.DesiredHeat)/10.0)

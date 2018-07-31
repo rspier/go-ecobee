@@ -28,3 +28,17 @@ func checkRequiredFlags() {
 	// put appid in a config file and then forget about it
 	requiredStringFlag("appid", appID)
 }
+
+func stringBoolToFloat(b string) float64 {
+	if b == "true" {
+		return 1
+	}
+	return 0
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 1
+	}
+	return 0
+}
