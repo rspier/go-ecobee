@@ -154,31 +154,15 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 		if err != nil {
 			return nil, fmt.Errorf("error from ParseBool(%v): %v", rl[2], err)
 		}
-		thermostatRevision, err := strconv.Atoi(rl[3])
-		if err != nil {
-			return nil, fmt.Errorf("error Atoi(%v): %v", rl[3], err)
-		}
-		alertsRevision, err := strconv.Atoi(rl[4])
-		if err != nil {
-			return nil, fmt.Errorf("error Atoi(%v): %v", rl[4], err)
-		}
-		runtimeRevision, err := strconv.Atoi(rl[5])
-		if err != nil {
-			return nil, fmt.Errorf("error Atoi(%v): %v", rl[5], err)
-		}
-		intervalRevision, err := strconv.Atoi(rl[6])
-		if err != nil {
-			return nil, fmt.Errorf("error Atoi(%v): %v", rl[6], err)
-		}
 
 		ts := ThermostatSummary{
 			Identifier:         rl[0],
 			Name:               rl[1],
 			Connected:          connected,
-			ThermostatRevision: thermostatRevision,
-			AlertsRevision:     alertsRevision,
-			RuntimeRevision:    runtimeRevision,
-			IntervalRevision:   intervalRevision,
+			ThermostatRevision: rl[3],
+			AlertsRevision:     rl[4],
+			RuntimeRevision:    rl[5],
+			IntervalRevision:   rl[6],
 			EquipmentStatus:    es,
 		}
 		tsm[rl[0]] = ts

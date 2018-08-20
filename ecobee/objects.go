@@ -284,10 +284,10 @@ type ThermostatSummary struct {
 	Identifier         string `json:"Identifier"`
 	Name               string `json:"Name"`
 	Connected          bool   `json:"Connected"`
-	ThermostatRevision int    `json:"ThermostatRevision"`
-	AlertsRevision     int    `json:"AlertsRevision."`
-	RuntimeRevision    int    `json:"RuntimeRevision"`
-	IntervalRevision   int    `json:"IntervalRevision"`
+	ThermostatRevision string `json:"ThermostatRevision"`
+	AlertsRevision     string `json:"AlertsRevision."`
+	RuntimeRevision    string `json:"RuntimeRevision"`
+	IntervalRevision   string `json:"IntervalRevision"`
 	EquipmentStatus
 }
 type ThermostatSummaryMap map[string]ThermostatSummary
