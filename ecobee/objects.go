@@ -285,7 +285,7 @@ type ThermostatSummary struct {
 	Name               string `json:"Name"`
 	Connected          bool   `json:"Connected"`
 	ThermostatRevision string `json:"ThermostatRevision"`
-	AlertsRevision     string `json:"AlertsRevision."`
+	AlertsRevision     string `json:"AlertsRevision"`
 	RuntimeRevision    string `json:"RuntimeRevision"`
 	IntervalRevision   string `json:"IntervalRevision"`
 	EquipmentStatus
