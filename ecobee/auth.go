@@ -78,13 +78,16 @@ func (ts *tokenSource) firstAuth() error {
 	if err != nil {
 		return fmt.Errorf("error retrieving response: %s", err)
 	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("invalid server response: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response: %s", err)
 	}
-
-	resp.Body.Close()
 
 	var r struct { // pinResponse
 		EcobeePin string `json:"ecobeePin"`
@@ -148,12 +151,15 @@ func (ts *tokenSource) getToken(uv url.Values) error {
 	if err != nil {
 		return fmt.Errorf("error POSTing request: %s", err)
 	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("invalid server response: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response: %s", err)
 	}
-	resp.Body.Close()
 
 	var r tokenResponse
 	err = json.Unmarshal(body, &r)

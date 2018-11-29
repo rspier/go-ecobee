@@ -42,12 +42,15 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	if err != nil {
 		return fmt.Errorf("error on post request: %v", err)
 	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("invalid server response: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading body: %v", err)
 	}
-	resp.Body.Close()
 
 	var s UpdateThermostatResponse
 	if err = json.Unmarshal(body, &s); err != nil {
@@ -178,6 +181,10 @@ func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error on get request: %v", err)
 	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("invalid server response: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -186,7 +193,6 @@ func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
 
 	glog.V(2).Infof("respones: %s", body)
 
-	resp.Body.Close()
 	return body, nil
 }
 
