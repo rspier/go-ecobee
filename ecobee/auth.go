@@ -17,6 +17,7 @@ package ecobee
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -31,17 +32,45 @@ import (
 var Scopes = []string{"smartRead", "smartWrite"}
 
 type tokenSource struct {
-	token               oauth2.Token
-	cacheFile, clientID string
+	token     oauth2.Token
+	apiKey    string
+	authCache AuthCache
 }
 
-func TokenSource(clientID, cacheFile string) oauth2.TokenSource {
-	return oauth2.ReuseTokenSource(nil, newTokenSource(clientID, cacheFile))
+// AuthCache encapsulates persistent cache for OAuth2 token.
+type AuthCache interface {
+	LoadTokenData() ([]byte, error)
+	SaveTokenData(data []byte) error
 }
 
-func newTokenSource(clientID, cacheFile string) *tokenSource {
-	file, err := ioutil.ReadFile(cacheFile)
-	ets := tokenSource{clientID: clientID, cacheFile: cacheFile}
+type fileAuthCache struct {
+	fileName string
+}
+
+func (p fileAuthCache) LoadTokenData() ([]byte, error) {
+	return ioutil.ReadFile(p.fileName)
+}
+
+func (p fileAuthCache) SaveTokenData(data []byte) error {
+	return ioutil.WriteFile(p.fileName, data, 0777)
+}
+
+// TokenCacheFile returns AuthCache that persists the OAuth2 token in the specified file.
+func TokenCacheFile(fileName string) AuthCache {
+	return fileAuthCache{fileName}
+}
+
+func TokenSource(apiKey, cacheFile string) oauth2.TokenSource {
+	return TokenSourceWithAuthCache(apiKey, fileAuthCache{cacheFile})
+}
+
+func TokenSourceWithAuthCache(apiKey string, authCache AuthCache) oauth2.TokenSource {
+	return oauth2.ReuseTokenSource(nil, newTokenSource(apiKey, authCache))
+}
+
+func newTokenSource(apiKey string, authCache AuthCache) *tokenSource {
+	file, err := authCache.LoadTokenData()
+	ets := tokenSource{apiKey: apiKey, authCache: authCache}
 	if err != nil {
 		// no file, corrupted, or other problem: just start with an
 		// empty token.
@@ -56,15 +85,14 @@ func (ts *tokenSource) save() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(ts.cacheFile, d, 0777)
-	return err
+	return ts.authCache.SaveTokenData(d)
 }
 
 func (ts *tokenSource) firstAuth() error {
 
 	uv := url.Values{
 		"response_type": {"ecobeePin"},
-		"client_id":     {ts.clientID},
+		"client_id":     {ts.apiKey},
 		"scope":         {strings.Join(Scopes, ",")},
 	}
 	u := url.URL{
@@ -128,14 +156,14 @@ func (tr *tokenResponse) Token() oauth2.Token {
 func (ts *tokenSource) accessToken(code string) error {
 	return ts.getToken(url.Values{
 		"grant_type": {"ecobeePin"},
-		"client_id":  {ts.clientID},
+		"client_id":  {ts.apiKey},
 		"code":       {code},
 	})
 }
 func (ts *tokenSource) refreshToken() error {
 	return ts.getToken(url.Values{
 		"grant_type":    {"refresh_token"},
-		"client_id":     {ts.clientID},
+		"client_id":     {ts.apiKey},
 		"refresh_token": {ts.token.RefreshToken},
 	})
 }
@@ -200,12 +228,43 @@ type Client struct {
 	*http.Client
 }
 
-// NewClient creates a Ecobee API client for the specific clientID
+// NewClient creates a Ecobee API client for the specific apiKey
 // (Application Key).  Use the Ecobee Developer Portal to create the
 // Application Key.
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
-func NewClient(clientID, authCache string) *Client {
-	return &Client{oauth2.NewClient(
-		context.Background(),
-		TokenSource(clientID, authCache))}
+// This function is deprecated - use New() instead.
+func NewClient(apiKey, authCache string) *Client {
+	c, err := New(context.TODO(), Options{
+		APIKey:    apiKey,
+		AuthCache: fileAuthCache{authCache},
+	})
+
+	if err != nil {
+		// can't fail here.
+		panic("unexpected usage: " + err.Error())
+	}
+
+	return c
+}
+
+// Options specifies EcoBee client parameters.
+type Options struct {
+	APIKey    string    // API Key created in Ecobee Developer Portal
+	AuthCache AuthCache // token cache, typically TokenCacheFile(fileName)
+}
+
+// New creates a Ecobee API client for the specific options
+// Use the Ecobee Developer Portal to create the Application Key.
+// (https://www.ecobee.com/consumerportal/index.html#/dev)
+func New(ctx context.Context, opt Options) (*Client, error) {
+	if opt.APIKey == "" {
+		return nil, errors.New("API key is required")
+	}
+	if opt.AuthCache == nil {
+		return nil, fmt.Errorf("auth cache is required")
+	}
+
+	ts := TokenSourceWithAuthCache(opt.APIKey, opt.AuthCache)
+	cli := oauth2.NewClient(ctx, ts)
+	return &Client{cli}, nil
 }
