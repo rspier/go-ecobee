@@ -114,7 +114,7 @@ func client() *ecobee.Client {
 		}
 		ac = path.Join(home, authCacheFile)
 	}
-	glog.Infof("authCache: %s", ac)
+	glog.V(1).Infof("authCache: %s", ac)
 	// replace authCacheFile with authCache flag
 	return ecobee.NewClient(appID, ac)
 }
