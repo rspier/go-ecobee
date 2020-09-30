@@ -184,8 +184,8 @@ func (ts *tokenSource) Token() (*oauth2.Token, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error on initial authentication: %s", err)
 			}
-			fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu" +
-				" under 'My Apps'\n", pinResponse.EcobeePin)
+			fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
+					" under 'My Apps'\n", pinResponse.EcobeePin)
 			var input string
 			fmt.Scanln(&input)
 			err = ts.accessToken(pinResponse.Code)
