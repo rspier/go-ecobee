@@ -200,7 +200,6 @@ func (ts *tokenSource) Token() (*oauth2.Token, error) {
 // Client represents the Ecobee API client.
 type Client struct {
 	*http.Client
-	ts *tokenSource
 }
 
 // NewClient creates a Ecobee API client for the specific clientID
@@ -208,16 +207,15 @@ type Client struct {
 // Application Key.
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
 func NewClient(clientID, authCache string) *Client {
-	internalTs := newTokenSource(clientID, authCache)
 	return &Client{oauth2.NewClient(
-		context.Background(), TokenSource(clientID, authCache)), internalTs}
+		context.Background(), TokenSource(clientID, authCache))}
 }
 
 
-func (c *Client) GetPin() (PinResponse, error) {
-	return c.ts.FirstAuth()
+func GetPin(clientId string) (PinResponse, error) {
+	return newTokenSource(clientId, "").FirstAuth()
 }
 
-func (c *Client) SaveToken(code string) error {
-	return c.ts.accessToken(code)
+func SaveToken(clientId string, authCache string, code string) error {
+	return newTokenSource(clientId, authCache).accessToken(code)
 }
