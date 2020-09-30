@@ -16,7 +16,7 @@ package main
 import (
 	goflag "flag"
 
-	"github.com/tedpearson/go-ecobee/cmd"
+	"github.com/rspier/go-ecobee/cmd"
 	flag "github.com/spf13/pflag"
 )
 

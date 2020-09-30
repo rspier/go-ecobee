@@ -41,8 +41,8 @@ again.
      exercised by your tests.
 
   1. Please run:
-     * `go test github.com/tedpearson/go-ecobee/...`
-     * `go vet github.com/tedpearson/go-ecobee/...`
+     * `go test github.com/rspier/go-ecobee/...`
+     * `go vet github.com/rspier/go-ecobee/...`
 
   1. Do your best to have [well-formed commit messages][] for each change.
      This provides consistency throughout the project, and ensures that commit

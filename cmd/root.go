@@ -20,7 +20,7 @@ import (
 
 	"github.com/golang/glog"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/tedpearson/go-ecobee/ecobee"
+	"github.com/rspier/go-ecobee/ecobee"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
