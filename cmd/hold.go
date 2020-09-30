@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/rspier/go-ecobee/ecobee"
+	"github.com/tedpearson/go-ecobee/ecobee"
 	"github.com/spf13/cobra"
 )
 

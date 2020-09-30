@@ -11,7 +11,7 @@ serves as it's primary example.
 ### Install
 
 ```
-go install -u github.com/rspier/go-ecobee`
+go install -u github.com/tedpearson/go-ecobee`
 ```
 
 ### Build

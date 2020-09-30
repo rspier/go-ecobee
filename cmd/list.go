@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/rspier/go-ecobee/ecobee"
+	"github.com/tedpearson/go-ecobee/ecobee"
 	"github.com/spf13/cobra"
 )
 
