@@ -60,7 +60,7 @@ func (ts *tokenSource) save() error {
 	return err
 }
 
-func (ts *tokenSource) firstAuth() error {
+func (ts *tokenSource) FirstAuth() (PinResponse, error) {
 
 	uv := url.Values{
 		"response_type": {"ecobeePin"},
@@ -76,36 +76,30 @@ func (ts *tokenSource) firstAuth() error {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		return fmt.Errorf("error retrieving response: %s", err)
+		return PinResponse{}, fmt.Errorf("error retrieving response: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("invalid server response: %v", resp.Status)
+		return PinResponse{}, fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading response: %s", err)
+		return PinResponse{}, fmt.Errorf("error reading response: %s", err)
 	}
 
-	var r struct { // pinResponse
-		EcobeePin string `json:"ecobeePin"`
-		Code      string `json:"code"`
-		// interval
-		// expires_in
-	}
+	var r PinResponse
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		return fmt.Errorf("error unmarshalling response: %s", err)
+		return PinResponse{}, fmt.Errorf("error unmarshalling response: %s", err)
 	}
+	return r, nil
+}
 
-	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu under 'My Apps'\n", r.EcobeePin)
-	var input string
-	fmt.Scanln(&input)
-
-	return ts.accessToken(r.Code)
-
+type PinResponse struct {
+	EcobeePin string `json:"ecobeePin"`
+	Code      string `json:"code"`
 }
 
 type tokenResponse struct {
@@ -186,7 +180,15 @@ func (ts *tokenSource) Token() (*oauth2.Token, error) {
 				return nil, fmt.Errorf("error refreshing token: %s", err)
 			}
 		} else {
-			err := ts.firstAuth()
+			pinResponse, err := ts.FirstAuth()
+			if err != nil {
+				return nil, fmt.Errorf("error on initial authentication: %s", err)
+			}
+			fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu" +
+				" under 'My Apps'\n", pinResponse.EcobeePin)
+			var input string
+			fmt.Scanln(&input)
+			err = ts.accessToken(pinResponse.Code)
 			if err != nil {
 				return nil, fmt.Errorf("error on initial authentication: %s", err)
 			}
@@ -198,6 +200,7 @@ func (ts *tokenSource) Token() (*oauth2.Token, error) {
 // Client represents the Ecobee API client.
 type Client struct {
 	*http.Client
+	ts *tokenSource
 }
 
 // NewClient creates a Ecobee API client for the specific clientID
@@ -205,7 +208,16 @@ type Client struct {
 // Application Key.
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
 func NewClient(clientID, authCache string) *Client {
+	internalTs := newTokenSource(clientID, authCache)
 	return &Client{oauth2.NewClient(
-		context.Background(),
-		TokenSource(clientID, authCache))}
+		context.Background(), TokenSource(clientID, authCache)), internalTs}
+}
+
+
+func (c *Client) GetPin() (PinResponse, error) {
+	return c.ts.FirstAuth()
+}
+
+func (c *Client) SaveToken(code string) error {
+	return c.ts.accessToken(code)
 }
