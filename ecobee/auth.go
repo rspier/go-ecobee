@@ -211,11 +211,14 @@ func NewClient(clientID, authCache string) *Client {
 		context.Background(), TokenSource(clientID, authCache))}
 }
 
-
+// GetPin retrieves an ecobee Pin and Code, allowing calling code to present them to the user
+// outside of the ecobee request context.
 func GetPin(clientId string) (PinResponse, error) {
 	return newTokenSource(clientId, "").FirstAuth()
 }
 
+// SaveToken retreives a new token from ecobee and saves it to the auth cache
+// after a pin/code combination has been added by an ecobee user.
 func SaveToken(clientId string, authCache string, code string) error {
 	return newTokenSource(clientId, authCache).accessToken(code)
 }
