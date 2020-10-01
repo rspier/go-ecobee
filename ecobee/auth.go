@@ -60,8 +60,26 @@ func (ts *tokenSource) save() error {
 	return err
 }
 
-func (ts *tokenSource) FirstAuth() (PinResponse, error) {
+type PinResponse struct {
+	EcobeePin string `json:"ecobeePin"`
+	Code      string `json:"code"`
+}
 
+// Interactive authentication, triggered on initial use of the client
+func (ts *tokenSource) firstAuth() error {
+	pinResponse, err := ts.authorize()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
+			" under 'My Apps'\n", pinResponse.EcobeePin)
+	var input string
+	fmt.Scanln(&input)
+	return ts.accessToken(pinResponse.Code)
+}
+
+// Make a pin request to ecobee and return the pin and code
+func (ts *tokenSource) authorize() (*PinResponse, error) {
 	uv := url.Values{
 		"response_type": {"ecobeePin"},
 		"client_id":     {ts.clientID},
@@ -76,30 +94,25 @@ func (ts *tokenSource) FirstAuth() (PinResponse, error) {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		return PinResponse{}, fmt.Errorf("error retrieving response: %s", err)
+		return nil, fmt.Errorf("error retrieving response: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return PinResponse{}, fmt.Errorf("invalid server response: %v", resp.Status)
+		return nil, fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return PinResponse{}, fmt.Errorf("error reading response: %s", err)
+		return nil, fmt.Errorf("error reading response: %s", err)
 	}
 
 	var r PinResponse
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		return PinResponse{}, fmt.Errorf("error unmarshalling response: %s", err)
+		return nil, fmt.Errorf("error unmarshalling response: %s", err)
 	}
-	return r, nil
-}
-
-type PinResponse struct {
-	EcobeePin string `json:"ecobeePin"`
-	Code      string `json:"code"`
+	return &r, nil
 }
 
 type tokenResponse struct {
@@ -180,15 +193,7 @@ func (ts *tokenSource) Token() (*oauth2.Token, error) {
 				return nil, fmt.Errorf("error refreshing token: %s", err)
 			}
 		} else {
-			pinResponse, err := ts.FirstAuth()
-			if err != nil {
-				return nil, fmt.Errorf("error on initial authentication: %s", err)
-			}
-			fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
-					" under 'My Apps'\n", pinResponse.EcobeePin)
-			var input string
-			fmt.Scanln(&input)
-			err = ts.accessToken(pinResponse.Code)
+			err := ts.firstAuth()
 			if err != nil {
 				return nil, fmt.Errorf("error on initial authentication: %s", err)
 			}
@@ -211,10 +216,12 @@ func NewClient(clientID, authCache string) *Client {
 		context.Background(), TokenSource(clientID, authCache))}
 }
 
-// GetPin retrieves an ecobee Pin and Code, allowing calling code to present them to the user
+// Authorize retrieves an ecobee Pin and Code, allowing calling code to present them to the user
 // outside of the ecobee request context.
-func GetPin(clientId string) (PinResponse, error) {
-	return newTokenSource(clientId, "").FirstAuth()
+// This is useful when non-interactive authorization is required.
+// For example: an app being deployed and authorized using ansible, which does not support interacting with commands.
+func Authorize(clientId string) (*PinResponse, error) {
+	return newTokenSource(clientId, "").authorize()
 }
 
 // SaveToken retreives a new token from ecobee and saves it to the auth cache
