@@ -60,8 +60,26 @@ func (ts *tokenSource) save() error {
 	return err
 }
 
-func (ts *tokenSource) firstAuth() error {
+type PinResponse struct {
+	EcobeePin string `json:"ecobeePin"`
+	Code      string `json:"code"`
+}
 
+// Interactive authentication, triggered on initial use of the client
+func (ts *tokenSource) firstAuth() error {
+	pinResponse, err := ts.authorize()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
+			" under 'My Apps'\n", pinResponse.EcobeePin)
+	var input string
+	fmt.Scanln(&input)
+	return ts.accessToken(pinResponse.Code)
+}
+
+// Make a pin request to ecobee and return the pin and code
+func (ts *tokenSource) authorize() (*PinResponse, error) {
 	uv := url.Values{
 		"response_type": {"ecobeePin"},
 		"client_id":     {ts.clientID},
@@ -76,36 +94,25 @@ func (ts *tokenSource) firstAuth() error {
 
 	resp, err := http.Get(u.String())
 	if err != nil {
-		return fmt.Errorf("error retrieving response: %s", err)
+		return nil, fmt.Errorf("error retrieving response: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("invalid server response: %v", resp.Status)
+		return nil, fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading response: %s", err)
+		return nil, fmt.Errorf("error reading response: %s", err)
 	}
 
-	var r struct { // pinResponse
-		EcobeePin string `json:"ecobeePin"`
-		Code      string `json:"code"`
-		// interval
-		// expires_in
-	}
+	var r PinResponse
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		return fmt.Errorf("error unmarshalling response: %s", err)
+		return nil, fmt.Errorf("error unmarshalling response: %s", err)
 	}
-
-	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu under 'My Apps'\n", r.EcobeePin)
-	var input string
-	fmt.Scanln(&input)
-
-	return ts.accessToken(r.Code)
-
+	return &r, nil
 }
 
 type tokenResponse struct {
@@ -204,8 +211,21 @@ type Client struct {
 // (Application Key).  Use the Ecobee Developer Portal to create the
 // Application Key.
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
-func NewClient(clientID, authCache string) *Client {
+func NewClient(clientID, cacheFile string) *Client {
 	return &Client{oauth2.NewClient(
-		context.Background(),
-		TokenSource(clientID, authCache))}
+		context.Background(), TokenSource(clientID, cacheFile))}
+}
+
+// Authorize retrieves an ecobee Pin and Code, allowing calling code to present them to the user
+// outside of the ecobee request context.
+// This is useful when non-interactive authorization is required.
+// For example: an app being deployed and authorized using ansible, which does not support interacting with commands.
+func Authorize(clientId string) (*PinResponse, error) {
+	return newTokenSource(clientId, "").authorize()
+}
+
+// SaveToken retreives a new token from ecobee and saves it to the auth cache
+// after a pin/code combination has been added by an ecobee user.
+func SaveToken(clientId string, cacheFile string, code string) error {
+	return newTokenSource(clientId, cacheFile).accessToken(code)
 }
