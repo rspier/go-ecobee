@@ -211,9 +211,9 @@ type Client struct {
 // (Application Key).  Use the Ecobee Developer Portal to create the
 // Application Key.
 // (https://www.ecobee.com/consumerportal/index.html#/dev)
-func NewClient(clientID, authCache string) *Client {
+func NewClient(clientID, cacheFile string) *Client {
 	return &Client{oauth2.NewClient(
-		context.Background(), TokenSource(clientID, authCache))}
+		context.Background(), TokenSource(clientID, cacheFile))}
 }
 
 // Authorize retrieves an ecobee Pin and Code, allowing calling code to present them to the user
@@ -226,6 +226,6 @@ func Authorize(clientId string) (*PinResponse, error) {
 
 // SaveToken retreives a new token from ecobee and saves it to the auth cache
 // after a pin/code combination has been added by an ecobee user.
-func SaveToken(clientId string, authCache string, code string) error {
-	return newTokenSource(clientId, authCache).accessToken(code)
+func SaveToken(clientId string, cacheFile string, code string) error {
+	return newTokenSource(clientId, cacheFile).accessToken(code)
 }
