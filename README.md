@@ -25,8 +25,11 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
 
 ### Application ID
 
-Obtain an Ecobee API Application ID at
+Create an Ecobee API Application ID (API key) at
 https://www.ecobee.com/consumerportal/index.html#/dev
+
+You probably want to use the `ecobee PIN` authorization method for non-web based
+tools.
 
 ### Thermostat ID
 
