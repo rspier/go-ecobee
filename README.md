@@ -91,11 +91,15 @@ ${THERMID}: My ecobee3
 
 ## Development
 
-## Staticcheck
+## Lint
 
-https://github.com/dominikh/go-tools
+Use [golangci-lint](https://golangci-lint.run/):
 
-staticcheck ./ecobee/ ./cmd/ .
+```shell
+docker run --rm -v $(pwd):/app -w /app \
+  golangci/golangci-lint:v1.35.2 golangci-lint run \
+  -E golint,goimports,misspell
+```
 
 ## Ideas for future development
 

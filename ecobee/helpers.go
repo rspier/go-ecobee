@@ -51,7 +51,7 @@ func (c *Client) RunFan(id string, duration time.Duration) error {
 		EndTime:      end.Format("15:04:05"),
 		EndDate:      end.Format("2006-01-02"),
 		Event: Event{
-			Fan: "on",
+			Fan:                   "on",
 			IsTemperatureRelative: false,
 			IsTemperatureAbsolute: false,
 			OccupiedSensorActive:  false,

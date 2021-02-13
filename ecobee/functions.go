@@ -191,7 +191,7 @@ func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
 		return nil, fmt.Errorf("error reading body: %v", err)
 	}
 
-	glog.V(2).Infof("respones: %s", body)
+	glog.V(2).Infof("responses: %s", body)
 
 	return body, nil
 }

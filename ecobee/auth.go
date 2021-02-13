@@ -28,6 +28,8 @@ import (
 )
 
 // This file contains authentication related functions and structs.
+
+// Scopes defines the scopes we request from the API.
 var Scopes = []string{"smartRead", "smartWrite"}
 
 type tokenSource struct {
@@ -41,14 +43,18 @@ func TokenSource(clientID, cacheFile string) oauth2.TokenSource {
 
 func newTokenSource(clientID, cacheFile string) *tokenSource {
 	file, err := ioutil.ReadFile(cacheFile)
-	ets := tokenSource{clientID: clientID, cacheFile: cacheFile}
 	if err != nil {
 		// no file, corrupted, or other problem: just start with an
 		// empty token.
-		return &ets
+		return &tokenSource{clientID: clientID, cacheFile: cacheFile}
 	}
-	json.Unmarshal(file, &ets.token)
-	return &ets
+	var tok oauth2.Token
+	err = json.Unmarshal(file, &tok)
+	if err != nil {
+		// can't unmarshal?  Return an empty token.
+		return &tokenSource{clientID: clientID, cacheFile: cacheFile}
+	}
+	return &tokenSource{clientID: clientID, cacheFile: cacheFile, token: tok}
 }
 
 func (ts *tokenSource) save() error {
@@ -72,7 +78,7 @@ func (ts *tokenSource) firstAuth() error {
 		return err
 	}
 	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
-			" under 'My Apps'\n", pinResponse.EcobeePin)
+		" under 'My Apps'\n", pinResponse.EcobeePin)
 	var input string
 	fmt.Scanln(&input)
 	return ts.accessToken(pinResponse.Code)
@@ -220,12 +226,12 @@ func NewClient(clientID, cacheFile string) *Client {
 // outside of the ecobee request context.
 // This is useful when non-interactive authorization is required.
 // For example: an app being deployed and authorized using ansible, which does not support interacting with commands.
-func Authorize(clientId string) (*PinResponse, error) {
-	return newTokenSource(clientId, "").authorize()
+func Authorize(clientID string) (*PinResponse, error) {
+	return newTokenSource(clientID, "").authorize()
 }
 
 // SaveToken retreives a new token from ecobee and saves it to the auth cache
 // after a pin/code combination has been added by an ecobee user.
-func SaveToken(clientId string, cacheFile string, code string) error {
-	return newTokenSource(clientId, cacheFile).accessToken(code)
+func SaveToken(clientID string, cacheFile string, code string) error {
+	return newTokenSource(clientID, cacheFile).accessToken(code)
 }
