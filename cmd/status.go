@@ -81,19 +81,21 @@ func showStatus(c *ecobee.Client, ts *ecobee.ThermostatSummary, t *ecobee.Thermo
 		t.Runtime.DesiredFanMode,
 		running)
 
-	ev := t.Events[0]
-	if ev.Running {
-		switch ev.Type {
-		case "hold":
-			fmt.Printf("Holding at %.1f - %.1f (Fan: %s) until %s %s\n",
-				float64(ev.HeatHoldTemp)/10.0,
-				float64(ev.CoolHoldTemp)/10.0,
-				ev.Fan,
-				ev.EndDate,
-				ev.EndTime)
-		case "vacation":
-			fmt.Printf("On vacation until %s %s\n",
-				ev.EndDate, ev.EndTime)
+	if len(t.Events) > 0 {
+		ev := t.Events[0]
+		if ev.Running {
+			switch ev.Type {
+			case "hold":
+				fmt.Printf("Holding at %.1f - %.1f (Fan: %s) until %s %s\n",
+					float64(ev.HeatHoldTemp)/10.0,
+					float64(ev.CoolHoldTemp)/10.0,
+					ev.Fan,
+					ev.EndDate,
+					ev.EndTime)
+			case "vacation":
+				fmt.Printf("On vacation until %s %s\n",
+					ev.EndDate, ev.EndTime)
+			}
 		}
 	}
 
