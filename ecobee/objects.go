@@ -171,11 +171,17 @@ type Runtime struct {
 	RuntimeInterval    int    `json:"runtimeInterval"`
 	ActualTemperature  int    `json:"actualTemperature"`
 	ActualHumidity     int    `json:"actualHumidity"`
+	RawTemperature     int    `json:"rawTemperature"`
+	ShowIconMode       int    `json:"showIconMode"`
 	DesiredHeat        int    `json:"desiredHeat"`
 	DesiredCool        int    `json:"desiredCool"`
 	DesiredHumidity    int    `json:"desiredHumidity"`
 	DesiredDehumidity  int    `json:"desiredDehumidity"`
 	DesiredFanMode     string `json:"desiredFanMode"`
+	ActualVOC          int    `json:"actualVOC"`
+	ActualCO2          int    `json:"actualCO2"`
+	ActualAQAccuracy   int    `json:"actualAQAccuracy"`
+	ActualAQScore      int    `json:"actualAQScore"`
 	DesiredHeatRange   []int  `json:"desiredHeatRange"`
 	DesiredCoolRange   []int  `json:"desiredCoolRange"`
 }
