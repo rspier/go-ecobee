@@ -26,8 +26,10 @@ import (
 	"github.com/golang/glog"
 )
 
-const thermostatAPIURL = `https://api.ecobee.com/1/thermostat`
-const thermostatSummaryURL = `https://api.ecobee.com/1/thermostatSummary`
+const (
+	thermostatAPIURL     = `https://api.ecobee.com/1/thermostat`
+	thermostatSummaryURL = `https://api.ecobee.com/1/thermostatSummary`
+)
 
 func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	j, err := json.Marshal(&utr)
@@ -65,10 +67,7 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	return fmt.Errorf("API error: %s", s.Status.Message)
 }
 
-func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
-	// TODO: Consider factoring the generation of Selection out into
-	// something else to make it more convenient to toggle the IncludeX
-	// flags?
+func (c *Client) GetThermostat(thermostatID string, opts ...SelectionOption) (*Thermostat, error) {
 	s := Selection{
 		SelectionType:  "thermostats",
 		SelectionMatch: thermostatID,
@@ -82,6 +81,11 @@ func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
 		IncludeSensors:         true,
 		IncludeWeather:         false,
 	}
+
+	for _, optfn := range opts {
+		optfn(s)
+	}
+
 	thermostats, err := c.GetThermostats(s)
 	if err != nil {
 		return nil, err
@@ -139,7 +143,7 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 
 	glog.V(1).Infof("GetThermostatSummary response: %#v", r)
 
-	var tsm = make(ThermostatSummaryMap, r.ThermostatCount)
+	tsm := make(ThermostatSummaryMap, r.ThermostatCount)
 
 	for i := 0; i < r.ThermostatCount; i++ {
 		rl := strings.Split(r.RevisionList[i], ":")
@@ -174,7 +178,6 @@ func (c *Client) GetThermostatSummary(selection Selection) (map[string]Thermosta
 }
 
 func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
-
 	glog.V(2).Infof("get(%s?json=%s)", endpoint, rawRequest)
 	request := url.QueryEscape(string(rawRequest))
 	resp, err := c.Get(fmt.Sprintf("%s?json=%s", endpoint, request))
@@ -223,7 +226,6 @@ func buildEquipmentStatus(input string) (EquipmentStatus, error) {
 }
 
 func (es *EquipmentStatus) Set(field string, state bool) {
-
 	switch field {
 	case "heatPump":
 		es.HeatPump = state
@@ -256,5 +258,4 @@ func (es *EquipmentStatus) Set(field string, state bool) {
 	case "auxHotWater":
 		es.AuxHotWater = state
 	}
-
 }
