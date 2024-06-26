@@ -2,133 +2,133 @@ package ecobee
 
 type SelectionOption func(s Selection)
 
-func IncludeAlerts(value bool) SelectionOption {
+func WithIncludeAlerts(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeAlerts = value
 	}
 }
 
-func IncludeAudio(value bool) SelectionOption {
+func WithIncludeAudio(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeAudio = value
 	}
 }
 
-func IncludeDevice(value bool) SelectionOption {
+func WithIncludeDevice(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeDevice = value
 	}
 }
 
-func IncludeElectricity(value bool) SelectionOption {
+func WithIncludeElectricity(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeElectricity = value
 	}
 }
 
-func IncludeEquipmentStatus(value bool) SelectionOption {
+func WithIncludeEquipmentStatus(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeElectricity = value
 	}
 }
 
-func IncludeEvents(value bool) SelectionOption {
+func WithIncludeEvents(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeEvents = value
 	}
 }
 
-func IncludeExtendedRuntime(value bool) SelectionOption {
+func WithIncludeExtendedRuntime(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeExtendedRuntime = value
 	}
 }
 
-func IncludeHouseDetails(value bool) SelectionOption {
+func WithIncludeHouseDetails(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeHouseDetails = value
 	}
 }
 
-func IncludeLocation(value bool) SelectionOption {
+func WithIncludeLocation(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeLocation = value
 	}
 }
 
-func IncludeManagement(value bool) SelectionOption {
+func WithIncludeManagement(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeManagement = value
 	}
 }
 
-func IncludeNotificationSettings(value bool) SelectionOption {
+func WithIncludeNotificationSettings(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeManagement = value
 	}
 }
 
-func IncludeOemCfg(value bool) SelectionOption {
+func WithIncludeOemCfg(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeOemCfg = value
 	}
 }
 
-func IncludePrivacy(value bool) SelectionOption {
+func WithIncludePrivacy(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludePrivacy = value
 	}
 }
 
-func IncludeProgram(value bool) SelectionOption {
+func WithIncludeProgram(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeProgram = value
 	}
 }
 
-func IncludeRuntime(value bool) SelectionOption {
+func WithIncludeRuntime(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeRuntime = value
 	}
 }
 
-func IncludeSecuritySettings(value bool) SelectionOption {
+func WithIncludeSecuritySettings(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeSecuritySettings = value
 	}
 }
 
-func IncludeSensors(value bool) SelectionOption {
+func WithIncludeSensors(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeSensors = value
 	}
 }
 
-func IncludeSettings(value bool) SelectionOption {
+func WithIncludeSettings(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeSettings = value
 	}
 }
 
-func IncludeTechnician(value bool) SelectionOption {
+func WithIncludeTechnician(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeSettings = value
 	}
 }
 
-func IncludeUtility(value bool) SelectionOption {
+func WithIncludeUtility(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeUtility = value
 	}
 }
 
-func IncludeVersion(value bool) SelectionOption {
+func WithIncludeVersion(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeVersion = value
 	}
 }
 
-func IncludeWeather(value bool) SelectionOption {
+func WithIncludeWeather(value bool) SelectionOption {
 	return func(s Selection) {
 		s.IncludeWeather = value
 	}
