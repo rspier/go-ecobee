@@ -26,9 +26,8 @@ import (
 	"github.com/golang/glog"
 )
 
-const thermostatAPIURL     = `https://api.ecobee.com/1/thermostat`
+const thermostatAPIURL = `https://api.ecobee.com/1/thermostat`
 const thermostatSummaryURL = `https://api.ecobee.com/1/thermostatSummary`
-
 
 func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	j, err := json.Marshal(&utr)
@@ -226,7 +225,7 @@ func buildEquipmentStatus(input string) (EquipmentStatus, error) {
 }
 
 func (es *EquipmentStatus) Set(field string, state bool) {
-	
+
 	switch field {
 	case "heatPump":
 		es.HeatPump = state
