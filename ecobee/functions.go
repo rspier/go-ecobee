@@ -65,10 +65,7 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 	return fmt.Errorf("API error: %s", s.Status.Message)
 }
 
-func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
-	// TODO: Consider factoring the generation of Selection out into
-	// something else to make it more convenient to toggle the IncludeX
-	// flags?
+func (c *Client) GetThermostat(thermostatID string, opts ...SelectionOption) (*Thermostat, error) {
 	s := Selection{
 		SelectionType:  "thermostats",
 		SelectionMatch: thermostatID,
@@ -82,6 +79,11 @@ func (c *Client) GetThermostat(thermostatID string) (*Thermostat, error) {
 		IncludeSensors:         true,
 		IncludeWeather:         false,
 	}
+
+	for _, o := range opts {
+		o(s)
+	}
+
 	thermostats, err := c.GetThermostats(s)
 	if err != nil {
 		return nil, err
