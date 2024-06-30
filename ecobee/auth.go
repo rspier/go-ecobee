@@ -80,7 +80,10 @@ func (ts *tokenSource) firstAuth() error {
 	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
 		" under 'My Apps'\n", pinResponse.EcobeePin)
 	var input string
-	fmt.Scanln(&input)
+	_, err = fmt.Scanln(&input)
+	if err != nil {
+		return err
+	}
 	return ts.accessToken(pinResponse.Code)
 }
 
