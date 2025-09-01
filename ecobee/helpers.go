@@ -29,7 +29,7 @@ func (c *Client) ResumeProgram(id string, resumeAll bool) error {
 			SelectionMatch: id,
 		},
 		Functions: []Function{
-			Function{
+			{
 				Type: "resumeProgram",
 				Params: ResumeProgramParams{
 					ResumeAll: resumeAll,
@@ -63,7 +63,7 @@ func (c *Client) RunFan(id string, duration time.Duration) error {
 			SelectionMatch: id,
 		},
 		Functions: []Function{
-			Function{
+			{
 				Type:   "setHold",
 				Params: shp,
 			},
@@ -88,7 +88,7 @@ func (c *Client) SendMessage(thermostat, message string) error {
 			SelectionMatch: thermostat,
 		},
 		Functions: []Function{
-			Function{
+			{
 				Type:   "sendMessage",
 				Params: smp,
 			},
@@ -161,7 +161,7 @@ func (c *Client) HoldTemp(thermostat string, heat, cool float64, d time.Duration
 			SelectionMatch: thermostat,
 		},
 		Functions: []Function{
-			Function{
+			{
 				Type:   "setHold",
 				Params: shp,
 			},
