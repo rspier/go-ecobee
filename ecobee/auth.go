@@ -18,9 +18,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -42,7 +43,7 @@ func TokenSource(clientID, cacheFile string) oauth2.TokenSource {
 }
 
 func newTokenSource(clientID, cacheFile string) *tokenSource {
-	file, err := ioutil.ReadFile(cacheFile)
+	file, err := os.ReadFile(cacheFile)
 	if err != nil {
 		// no file, corrupted, or other problem: just start with an
 		// empty token.
@@ -62,7 +63,7 @@ func (ts *tokenSource) save() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(ts.cacheFile, d, 0777)
+	err = os.WriteFile(ts.cacheFile, d, 0777)
 	return err
 }
 
@@ -111,7 +112,7 @@ func (ts *tokenSource) authorize() (*PinResponse, error) {
 		return nil, fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %s", err)
 	}
@@ -172,7 +173,7 @@ func (ts *tokenSource) getToken(uv url.Values) error {
 		return fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response: %s", err)
 	}

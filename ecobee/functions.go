@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -47,7 +47,7 @@ func (c *Client) UpdateThermostat(utr UpdateThermostatRequest) error {
 		return fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading body: %v", err)
 	}
@@ -188,7 +188,7 @@ func (c *Client) get(endpoint string, rawRequest []byte) ([]byte, error) {
 		return nil, fmt.Errorf("invalid server response: %v", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading body: %v", err)
 	}
