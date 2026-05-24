@@ -15,6 +15,7 @@ package ecobee
 // limitations under the License.
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -78,13 +79,10 @@ func (ts *tokenSource) firstAuth() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal in the menu"+
-		" under 'My Apps'\n", pinResponse.EcobeePin)
-	var input string
-	_, err = fmt.Scanln(&input)
-	if err != nil {
-		return err
-	}
+	fmt.Printf("Pin is %q\nPress <enter> after authorizing it on https://www.ecobee.com/consumerportal/index.html#/my-apps/ (in the menu"+
+		" under 'My Apps')\n", pinResponse.EcobeePin)
+	reader := bufio.NewReader(os.Stdin)
+	_, _ = reader.ReadString('\n')
 	return ts.accessToken(pinResponse.Code)
 }
 
