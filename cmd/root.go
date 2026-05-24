@@ -14,6 +14,7 @@
 package cmd
 
 import (
+	goflag "flag"
 	"fmt"
 	"log"
 	"os"
@@ -45,6 +46,10 @@ var RootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
+//
+// We need to parse goflag after Cobra to avoid "flag provided but not defined" errors
+// for Cobra's subcommands. We do this by calling goflag.CommandLine.Parse in Execute
+// after Cobra parses, or by letting Cobra handle the flags directly.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -78,6 +83,10 @@ func init() {
 	ck(viper.BindPFlag("thermostat", RootCmd.PersistentFlags().Lookup("thermostat")))
 	ck(viper.BindPFlag("appid", RootCmd.PersistentFlags().Lookup("appid")))
 	ck(viper.BindPFlag("authcache", RootCmd.PersistentFlags().Lookup("authcache")))
+
+	// Add Go standard flag set (including glog flags) to Cobra persistent flags
+	RootCmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+
 }
 
 // initConfig reads in config file and ENV variables if set.

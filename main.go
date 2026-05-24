@@ -17,11 +17,11 @@ import (
 	goflag "flag"
 
 	"github.com/rspier/go-ecobee/cmd"
-	flag "github.com/spf13/pflag"
 )
 
 func main() {
-	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
-	goflag.Parse()
+	// Parse an empty slice to mark the standard Go flag package as parsed,
+	// preventing glog from implicitly calling flag.Parse() and failing on Cobra's arguments.
+	_ = goflag.CommandLine.Parse([]string{})
 	cmd.Execute()
 }
